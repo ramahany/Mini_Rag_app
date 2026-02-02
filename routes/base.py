@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 import os
 api_router = APIRouter(
-    prefix="/api/v1"
+    prefix="/api/v1", 
+    tags=["Base"]
 )
 @api_router.get('/')
 async def welcome(): 
