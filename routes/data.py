@@ -1,4 +1,5 @@
-from fastapi import APIRouter, UploadFile
+from fastapi import APIRouter, UploadFile, status
+from fastapi.responses import JSONResponse
 from controllers import DataController
 
 data_router = APIRouter(
@@ -8,11 +9,20 @@ data_router = APIRouter(
 
 @data_router.get('/upload/{project_id}')
 async def upload_data(project_id : str, file : UploadFile):
-    data_controller = DataController()
-    is_valid, msg = data_controller.validate_uploaded_file(file=file)
-    return {
-        "ID" : project_id,
-        "Status" : 200 if is_valid else 400,
-        "msg" : msg
-    }
 
+    is_valid, signal = DataController().validate_uploaded_file(file=file)
+
+    if not is_valid : 
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            content = {
+                "signal" : signal
+            }
+
+        )
+    return JSONResponse(
+            status_code=status.HTTP_200_OK, 
+            content={
+                "signal" : signal
+                }
+        )
