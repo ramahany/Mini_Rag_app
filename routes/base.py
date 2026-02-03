@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from helpers.config import get_settings, Settings
 api_router = APIRouter(
     prefix="/api/v1", 
-    tags=["Base"]
+    tags=["api_v1"]
 )
 
 @api_router.get('/')
