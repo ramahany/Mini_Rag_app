@@ -5,6 +5,9 @@ from helpers.config import get_settings, Settings
 from models import ResponseSignal
 import aiofiles
 import os
+import logging
+logger = logging.getLogger('uvicorn.error')
+
 
 data_router = APIRouter(
     prefix='/api/v1/data',
@@ -14,8 +17,8 @@ data_router = APIRouter(
 @data_router.get('/upload/{project_id}')
 async def upload_data(project_id : str, file : UploadFile,
                       app_settings :Settings = Depends(get_settings)):
-
-    is_valid, signal = DataController().validate_uploaded_file(file=file)
+    data_controller = DataController()
+    is_valid, signal = data_controller.validate_uploaded_file(file=file)
 
     if not is_valid : 
         return JSONResponse(
@@ -26,12 +29,24 @@ async def upload_data(project_id : str, file : UploadFile,
 
         )
     proj_dir_path = ProjectController().get_project_dir(project_id=project_id) # this is the dir to store the file
-    file_path = os.path.join(proj_dir_path, file.filename) # while this is the path of the file you want to write
+    # file_path = os.path.join(proj_dir_path, file.filename) # while this is the path of the file you want to write
+    new_file_path = data_controller.generate_unique_filepath(orignal_file_name=file.filename, project_id=project_id)
 
 
-    async with aiofiles.open(file_path, 'wb') as f : # wb writing binary 
-        while chunk := await file.read(get_settings().FILE_DEFAULT_CHUNK_SIZE):
-            await f.write(chunk) # writing in the file 1 chunck at a time (better memory use)
+    try:
+        async with aiofiles.open(new_file_path, 'wb') as f : # wb writing binary 
+            while chunk := await file.read(get_settings().FILE_DEFAULT_CHUNK_SIZE):
+                await f.write(chunk) # writing in the file 1 chunck at a time (better memory use)
+    except Exception as e : 
+        logger.log(f"Error while uploading file: {e}")
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            content = {
+                "signal" : ResponseSignal.FILE_UPLOAD_FAILED.value
+            }
+
+        )
+
 
     return JSONResponse(
             content={
