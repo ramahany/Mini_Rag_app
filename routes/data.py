@@ -30,7 +30,7 @@ async def upload_data(project_id : str, file : UploadFile,
         )
     proj_dir_path = ProjectController().get_project_dir(project_id=project_id) # this is the dir to store the file
     # file_path = os.path.join(proj_dir_path, file.filename) # while this is the path of the file you want to write
-    new_file_path = data_controller.generate_unique_filepath(orignal_file_name=file.filename, project_id=project_id)
+    new_file_path, file_id = data_controller.generate_unique_filepath(orignal_file_name=file.filename, project_id=project_id)
 
 
     try:
@@ -47,9 +47,9 @@ async def upload_data(project_id : str, file : UploadFile,
 
         )
 
-
     return JSONResponse(
             content={
-                "signal" : ResponseSignal.FILE_UPLOAD_SUCCESS.value
+                "signal" : ResponseSignal.FILE_UPLOAD_SUCCESS.value,
+                "file ID" : file_id
                 }
         )
