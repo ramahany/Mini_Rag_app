@@ -36,6 +36,14 @@ class ChunkModel(BaseDataModel):
             await self.connection.bulk_write(operations)
         
         return len(chunks)
+    
+    # deleting all chunks in project using project_id for the doreset = 1 option 
+    async def delete_chunks_by_project_id(self, project_id : ObjectId): 
+        result = await self.connection.delete_many({
+            "chunk_project_id" : project_id
+        })
+
+        return result.deleted_count
 
 
 
