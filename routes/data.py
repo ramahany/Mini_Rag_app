@@ -1,9 +1,10 @@
-from fastapi import APIRouter, UploadFile, status, Depends
+from fastapi import APIRouter, UploadFile, status, Depends, Request
 from fastapi.responses import JSONResponse
 from controllers import DataController, ProjectController, ProcessController
 from helpers.config import get_settings, Settings
 from models import ResponseSignal
 from .schemes.data import ProcessRequest
+from models.ProjectModel import ProjectModel
 import aiofiles
 import os
 import logging
@@ -19,8 +20,15 @@ data_router = APIRouter(
 
 # Uploading the file end point 
 @data_router.post('/upload/{project_id}')
-async def upload_data(project_id : str, file : UploadFile,
+async def upload_data(request : Request, project_id : str, file : UploadFile,
                       app_settings :Settings = Depends(get_settings)):
+    
+    project_model = ProjectModel(
+        db_client= request.app.db_client
+    )
+
+    project = await project_model.get_project_or_create_one(project_id=project_id)
+
     data_controller = DataController()
     is_valid, signal = data_controller.validate_uploaded_file(file=file)
 
@@ -54,7 +62,8 @@ async def upload_data(project_id : str, file : UploadFile,
     return JSONResponse(
             content={
                 "signal" : ResponseSignal.FILE_UPLOAD_SUCCESS.value,
-                "file ID" : file_id
+                "file ID" : file_id, 
+                # "project_id" : str(project.id)
                 }
         )
 
