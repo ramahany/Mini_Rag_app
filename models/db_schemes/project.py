@@ -16,3 +16,16 @@ class Project(BaseModel):
     class Config: # so the ObjectId type wont be causing problems 
         arbitrary_types_allowed = True
 
+    @classmethod
+    def get_indexes(cls): # indexing to search through projects ( i want project with id 1)
+        return[
+            {
+                "key": [
+                    ("project_id", 1) # 1 ascending, -1 descending 
+                    # you can add where conditions  
+                ],
+                "name": "project_id_index_1",
+                "unique": True
+            }
+        ]
+

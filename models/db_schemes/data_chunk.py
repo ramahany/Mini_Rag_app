@@ -12,3 +12,14 @@ class DataChunk(BaseModel):
 
     class Config: # so the ObjectId type wont be causing problems 
         arbitrary_types_allowed = True
+
+    
+    @classmethod # indexing to search through chunks with x project id
+    def get_indexes(cls): 
+        return[{
+            "key":[
+                ("chunk_project_id", 1)
+            ], 
+            "name": "chunk_project_id_index_1", 
+            "unique": False # cause mult chunks can have the same project id
+        }]

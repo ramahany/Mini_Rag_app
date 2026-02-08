@@ -7,6 +7,31 @@ class ProjectModel(BaseDataModel):
         super().__init__(db_client = db_client)
         self.collection = self.db_client[DataBaseEnum.COLLECTION_PROJECT_NAME.value]
 
+
+    # how to access a async function in _init_ ?? you cant heeheheheh so use a wraper and use it for init the class to do both tasks
+    @classmethod
+    async def create_instance(cls, db_client:object): # it take the same params the init should be takin 
+        #the __init__()
+        instance = cls(db_client)
+        # call the async function 
+        await instance.init_collection()
+        #return the instance
+        return instance
+    
+
+    # u should create the indexing only the first time when u create the collection itself other wise you will have to do that in mongo manually
+    async def init_collection(self): 
+        all_collections = await self.db_client.list_collection_names()
+        if DataBaseEnum.COLLECTION_PROJECT_NAME.value not in all_collections: 
+            self.collection = self.db_client[DataBaseEnum.COLLECTION_PROJECT_NAME.value]
+            indexes = Project.get_indexes()
+            for index in indexes: 
+                await self.collection.create_index(
+                    index["key"],
+                    name=index["name"], 
+                    unique = index["unique"]
+                )
+
     # Creating a new doc (project) with a field of project_id == id givien by the user
     async def create_project(self, project: Project): 
         result = await self.collection.insert_one(project.dict(by_alias=True, exclude_unset=True))
