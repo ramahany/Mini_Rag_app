@@ -9,3 +9,6 @@ pymupdf==1.26.7
 
 # mongodb driver 
 motor==3.7.1
+
+# LLm providers 
+openai==2.23.0
