@@ -12,3 +12,6 @@ motor==3.7.1
 
 # LLm providers 
 openai==2.23.0
+cohere==5.20.6
+# VectorDB
+qdrant-client==1.17.0
